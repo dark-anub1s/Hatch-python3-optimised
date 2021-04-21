@@ -168,8 +168,7 @@ login_btn_selector = options.loginsel
 website = options.website
 pass_list = options.passlist
 user_list = options.userlist
-print(f'User list {user_list} / Password list {pass_list}')
-# print(banner)
+print(banner)
 
 if user_list:
     brutes(user_list, pass_list, username_selector, password_selector, login_btn_selector, website, use_list=True)
