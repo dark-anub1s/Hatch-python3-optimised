@@ -95,7 +95,8 @@ def brutes_ulist(userlist, passlist, username_selector, password_selector, login
     optionss.add_argument("--disable-extensions")
     browser = webdriver.Chrome(chrome_options=optionss)
     wait = WebDriverWait(browser, 10)
-    while True:
+    count = 0
+    while count < len(u_list):
         try:
             for user in u_list:
                 for line in p_list:
@@ -109,6 +110,7 @@ def brutes_ulist(userlist, passlist, username_selector, password_selector, login
                     print ('------------------------')
                     print (Color.GREEN + 'Tried password: '+Color.RED + line + Color.GREEN + 'for user: '+Color.RED+ username)
                     print ('------------------------')
+                    count += 1
         except KeyboardInterrupt: #returns to main menu if ctrl C is used
             print('CTRL C')
             break
