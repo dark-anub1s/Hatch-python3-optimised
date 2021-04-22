@@ -123,7 +123,7 @@ def brutes(username, username_selector ,password_selector,login_btn_selector,pas
                         print ('------------------------')
                         print (Color.GREEN + 'Tried password: '+Color.RED + line + Color.GREEN + 'for user: '+Color.RED+ username)
                         print ('------------------------')
-                        count += 1
+                    count += 1
             except KeyboardInterrupt:  # returns to main menu if ctrl C is used
                 print('CTRL C')
                 break
